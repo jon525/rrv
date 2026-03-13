@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0e">
+  <title>RRV Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">🛠️</span>
+        <div>
+          <div class="brand-title">RRV</div>
+          <div class="brand-subtitle">Mobile Edition</div>
+        </div>
+      </div>
+
+      <nav class="desktop-nav" aria-label="Primary">
+        <button class="nav-item active" type="button" data-view-target="home">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-item" type="button" data-view-target="decel">
+          <span class="nav-icon">🛑</span>
+          <span class="nav-label">Brake Test</span>
+        </button>
+        <button class="nav-item" type="button" data-view-target="twist">
+          <span class="nav-icon">📐</span>
+          <span class="nav-label">Twist Test</span>
+        </button>
+      </nav>
+    </aside>
+
+    <main class="content-area">
+      <section id="home" class="view" aria-labelledby="home-title">
+        <header class="section-header">
+          <h1 id="home-title">Dashboard</h1>
+          <p>Select a diagnostic tool to start a quick calculation on your phone.</p>
+        </header>
+
+        <section class="hero-grid" aria-label="Tool selection">
+          <button class="hero-card primary" type="button" data-view-target="decel">
+            <span class="icon large">🛑</span>
+            <span class="card-copy">
+              <strong>Brake Test</strong>
+              <span>Calculate average deceleration from speed and stopping time.</span>
+            </span>
+            <span class="card-action">Open tool</span>
+          </button>
+
+          <button class="hero-card secondary" type="button" data-view-target="twist">
+            <span class="icon large">📐</span>
+            <span class="card-copy">
+              <strong>Twist Test</strong>
+              <span>Measure chassis deviation from shortest and longest wheelbase.</span>
+            </span>
+            <span class="card-action">Open tool</span>
+          </button>
+        </section>
+
+        <section class="weather-widget card" aria-label="Dry Creek weather">
+          <div class="weather-header">
+            <div>
+              <p class="info-label">Weather</p>
+              <h2>Dry Creek, South Australia</h2>
+            </div>
+            <span id="weather-status" class="weather-chip">Loading</span>
+          </div>
+
+          <div class="weather-main">
+            <div id="weather-temp" class="weather-temp">--°C</div>
+            <div class="weather-summary">
+              <div id="weather-condition" class="weather-condition">Loading current conditions...</div>
+              <div id="weather-details" class="weather-details">Wind -- km/h</div>
+            </div>
+          </div>
+
+          <div class="weather-footer">
+            <span id="weather-updated">Updating weather...</span>
+          </div>
+        </section>
+      </section>
+
+      <section id="decel" class="view hidden" aria-labelledby="decel-title">
+        <div class="breadcrumb">
+          <button class="btn-text" type="button" data-view-target="home">← Dashboard</button>
+        </div>
+
+        <header class="section-header">
+          <p class="eyebrow">Brake test</p>
+          <h1 id="decel-title">Average Deceleration</h1>
+          <p>Enter the starting speed and stopping time to estimate deceleration and g-force.</p>
+        </header>
+
+        <div class="calculator-layout">
+          <section class="card glass input-panel" aria-label="Brake test inputs">
+            <div class="input-field">
+              <label for="decel-v">Speed (KM/H)</label>
+              <input id="decel-v" class="premium-input" type="number" inputmode="decimal" min="0" step="0.1">
+            </div>
+
+            <div class="input-field">
+              <label for="decel-t">Stopping Time (s)</label>
+              <input id="decel-t" class="premium-input" type="number" inputmode="decimal" min="0" step="0.1">
+            </div>
+          </section>
+
+          <section class="card glass result-panel accent" aria-label="Brake test results">
+            <div class="result-header">
+              <span>Result</span>
+            </div>
+
+            <div class="result-display">
+              <div id="res-a-time" class="main-res">0.00</div>
+              <div class="main-unit">m/s²</div>
+            </div>
+
+            <div class="sub-results">
+              <div class="sub-item">
+                <span class="sub-label">G-force</span>
+                <span id="res-g-force" class="sub-val">0.000 G</span>
+              </div>
+            </div>
+
+            <p class="formula-info">Formula: a = v / t, with speed converted from km/h to m/s.</p>
+          </section>
+        </div>
+      </section>
+
+      <section id="twist" class="view hidden" aria-labelledby="twist-title">
+        <div class="breadcrumb">
+          <button class="btn-text" type="button" data-view-target="home">← Dashboard</button>
+        </div>
+
+        <header class="section-header">
+          <p class="eyebrow">Twist test</p>
+          <h1 id="twist-title">Chassis Deviation</h1>
+          <p>Compare shortest and longest side measurements to estimate frame twist percentage.</p>
+        </header>
+
+        <div class="calculator-layout">
+          <section class="card glass input-panel" aria-label="Twist test inputs">
+            <div class="input-field">
+              <label for="twist-ws">WS</label>
+              <input id="twist-ws" class="premium-input" type="number" inputmode="decimal" min="0" step="0.1">
+            </div>
+
+            <div class="input-field">
+              <label for="twist-wl">WL</label>
+              <input id="twist-wl" class="premium-input" type="number" inputmode="decimal" min="0" step="0.1">
+            </div>
+          </section>
+
+          <section class="card glass result-panel accent-alt" aria-label="Twist test results">
+            <div class="result-header">
+              <span>Result</span>
+            </div>
+
+            <div class="result-display">
+              <div id="twist-val" class="main-res">0.00</div>
+              <div class="main-unit">%</div>
+            </div>
+
+            <p class="formula-info">Formula: ((WS - WL) / WS) × 100</p>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="physics.js"></script>
+  <script src="ui_decel.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
