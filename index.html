@@ -95,7 +95,7 @@
         <header class="section-header">
           <p class="eyebrow">Brake test</p>
           <h1 id="decel-title">Average Deceleration</h1>
-          <p>Enter the starting speed and stopping time to estimate deceleration and g-force.</p>
+          <p>Enter the starting speed and stopping distance to estimate deceleration and g-force.</p>
         </header>
 
         <div class="calculator-layout">
@@ -106,8 +106,8 @@
             </div>
 
             <div class="input-field">
-              <label for="decel-t">Stopping Time (s)</label>
-              <input id="decel-t" class="premium-input" type="number" inputmode="decimal" min="0" step="0.1">
+              <label for="decel-s">Stopping Distance (m)</label>
+              <input id="decel-s" class="premium-input" type="number" inputmode="decimal" min="0" step="0.1">
             </div>
           </section>
 
@@ -128,7 +128,7 @@
               </div>
             </div>
 
-            <p class="formula-info">Formula: a = v / t, with speed converted from km/h to m/s.</p>
+            <p class="formula-info">Formula: 0 = u² + 2as, so deceleration magnitude = u² / (2s).</p>
           </section>
         </div>
       </section>
