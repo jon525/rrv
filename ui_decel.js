@@ -11,12 +11,13 @@ const DecelUI = {
 
     [this.speedInput, this.distanceInput].forEach((element) => {
       element.addEventListener("input", () => this.calculate());
+      element.addEventListener("change", () => this.calculate());
     });
   },
 
   calculate() {
-    const speedKmh = Number.parseFloat(this.speedInput.value);
-    const distanceMeters = Number.parseFloat(this.distanceInput.value);
+    const speedKmh = this.parseDecimal(this.speedInput.value);
+    const distanceMeters = this.parseDecimal(this.distanceInput.value);
 
     if (!Number.isFinite(speedKmh) || !Number.isFinite(distanceMeters)) {
       this.clearResults();
@@ -53,5 +54,14 @@ const DecelUI = {
     }
 
     this.resultDecel.style.color = "var(--accent-success)";
+  },
+
+  parseDecimal(value) {
+    if (typeof value !== "string") {
+      return Number.NaN;
+    }
+
+    const normalized = value.trim().replace(",", ".");
+    return Number.parseFloat(normalized);
   }
 };

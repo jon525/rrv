@@ -55,12 +55,13 @@ const app = {
 
     [this.twistWs, this.twistWl].forEach((element) => {
       element.addEventListener("input", () => this.calculateTwist());
+      element.addEventListener("change", () => this.calculateTwist());
     });
   },
 
   calculateTwist() {
-    const ws = Number.parseFloat(this.twistWs.value);
-    const wl = Number.parseFloat(this.twistWl.value);
+    const ws = this.parseDecimal(this.twistWs.value);
+    const wl = this.parseDecimal(this.twistWl.value);
 
     if (!Number.isFinite(ws) || !Number.isFinite(wl) || ws <= 0 || wl <= 0) {
       this.setTwistState(0, "var(--accent-success)");
@@ -199,6 +200,15 @@ const app = {
       hour: "numeric",
       minute: "2-digit"
     }).format(date);
+  },
+
+  parseDecimal(value) {
+    if (typeof value !== "string") {
+      return Number.NaN;
+    }
+
+    const normalized = value.trim().replace(",", ".");
+    return Number.parseFloat(normalized);
   }
 };
 
