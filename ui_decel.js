@@ -4,6 +4,7 @@ const DecelUI = {
     this.distanceInput = document.getElementById("decel-s");
     this.resultDecel = document.getElementById("res-a-time");
     this.resultGForce = document.getElementById("res-g-force");
+    this.calcBox = document.getElementById("decel-calc");
 
     if (!this.speedInput || !this.distanceInput) {
       return;
@@ -31,15 +32,20 @@ const DecelUI = {
       return;
     }
 
+    const speedMs = Physics.kmhToMs(speedKmh);
     this.resultDecel.textContent = result.deceleration.toFixed(2);
     this.resultGForce.textContent = `${result.gForce.toFixed(3)} G`;
     this.setResultColor(result.deceleration);
+    this.updateCalculation(speedKmh, speedMs, distanceMeters, result.deceleration, result.gForce);
   },
 
   clearResults() {
     this.resultDecel.textContent = "0.00";
     this.resultGForce.textContent = "0.000 G";
     this.resultDecel.style.color = "var(--text-primary)";
+    if (this.calcBox) {
+      this.calcBox.innerHTML = "<div>Enter speed and distance to show the working.</div>";
+    }
   },
 
   setResultColor(deceleration) {
@@ -63,5 +69,17 @@ const DecelUI = {
 
     const normalized = value.trim().replace(",", ".");
     return Number.parseFloat(normalized);
+  },
+
+  updateCalculation(speedKmh, speedMs, distanceMeters, deceleration, gForce) {
+    if (!this.calcBox) {
+      return;
+    }
+
+    this.calcBox.innerHTML = `
+      <div>Speed conversion: ${speedKmh.toFixed(2)} km/h ÷ 3.6 = ${speedMs.toFixed(2)} m/s</div>
+      <div>Deceleration: a = u² / (2s) = (${speedMs.toFixed(2)}²) / (2 × ${distanceMeters.toFixed(2)}) = ${deceleration.toFixed(2)} m/s²</div>
+      <div>G-force: ${deceleration.toFixed(2)} ÷ 9.80665 = ${gForce.toFixed(3)} G</div>
+    `;
   }
 };

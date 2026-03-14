@@ -7,6 +7,7 @@ const app = {
     this.twistWs = document.getElementById("twist-ws");
     this.twistWl = document.getElementById("twist-wl");
     this.twistValue = document.getElementById("twist-val");
+    this.twistCalc = document.getElementById("twist-calc");
     this.weatherStatus = document.getElementById("weather-status");
     this.weatherTemp = document.getElementById("weather-temp");
     this.weatherCondition = document.getElementById("weather-condition");
@@ -65,10 +66,12 @@ const app = {
 
     if (!Number.isFinite(ws) || !Number.isFinite(wl) || ws <= 0 || wl <= 0) {
       this.setTwistState(0, "var(--accent-success)");
+      this.resetTwistCalculation();
       return;
     }
 
     const deviation = Math.abs(((ws - wl) / ws) * 100);
+    this.updateTwistCalculation(ws, wl, deviation);
 
     if (deviation > 60) {
       this.setTwistState(deviation, "var(--accent-error)");
@@ -86,6 +89,26 @@ const app = {
   setTwistState(value, resultColor) {
     this.twistValue.textContent = value.toFixed(2);
     this.twistValue.style.color = resultColor;
+  },
+
+  resetTwistCalculation() {
+    if (!this.twistCalc) {
+      return;
+    }
+
+    this.twistCalc.innerHTML = "<div>Enter WS and WL to show the working.</div>";
+  },
+
+  updateTwistCalculation(ws, wl, deviation) {
+    if (!this.twistCalc) {
+      return;
+    }
+
+    this.twistCalc.innerHTML = `
+      <div>Difference: WS - WL = ${ws.toFixed(2)} - ${wl.toFixed(2)} = ${(ws - wl).toFixed(2)}</div>
+      <div>Deviation: ((WS - WL) / WS) × 100 = ((${ws.toFixed(2)} - ${wl.toFixed(2)}) / ${ws.toFixed(2)}) × 100</div>
+      <div>Result: ${deviation.toFixed(2)}%</div>
+    `;
   },
 
   async loadWeather() {

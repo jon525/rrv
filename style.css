@@ -503,6 +503,24 @@ button {
   text-align: center;
 }
 
+.calc-box {
+  margin-top: 1.25rem;
+}
+
+.calc-lines {
+  display: grid;
+  gap: 0.6rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.calc-lines div {
+  padding: 0.8rem 0.9rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  overflow-wrap: anywhere;
+}
+
 .accent {
   border-top: 4px solid var(--accent-blue);
 }
