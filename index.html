@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260313-1">
 </head>
 <body>
   <div class="app-shell">
@@ -95,7 +95,7 @@
         <header class="section-header">
           <p class="eyebrow">Brake test</p>
           <h1 id="decel-title">Average Deceleration</h1>
-          <p>Enter the starting speed and stopping distance to estimate deceleration and g-force.</p>
+          <p>Enter the starting speed and stopping time to estimate deceleration and g-force.</p>
         </header>
 
         <div class="calculator-layout">
@@ -106,8 +106,8 @@
             </div>
 
             <div class="input-field">
-              <label for="decel-s">Stopping Distance (m)</label>
-              <input id="decel-s" class="premium-input" type="text" inputmode="decimal" autocomplete="off" spellcheck="false">
+              <label for="decel-t">Stopping Time (s)</label>
+              <input id="decel-t" class="premium-input" type="text" inputmode="decimal" autocomplete="off" spellcheck="false">
             </div>
           </section>
 
@@ -128,7 +128,7 @@
               </div>
             </div>
 
-            <p class="formula-info">Formula: 0 = u² + 2as, so deceleration magnitude = u² / (2s).</p>
+            <p class="formula-info">Formula: 0 = u + at, so deceleration magnitude = u / t.</p>
           </section>
         </div>
 
@@ -137,7 +137,7 @@
             <span>Calculations</span>
           </div>
           <div id="decel-calc" class="calc-lines">
-            <div>Enter speed and distance to show the working.</div>
+            <div>Enter speed and time to show the working.</div>
           </div>
         </section>
       </section>
@@ -192,8 +192,8 @@
     </main>
   </div>
 
-  <script src="physics.js"></script>
-  <script src="ui_decel.js"></script>
-  <script src="app.js"></script>
+  <script src="physics.js?v=20260313-1"></script>
+  <script src="ui_decel.js?v=20260313-1"></script>
+  <script src="app.js?v=20260313-1"></script>
 </body>
 </html>
