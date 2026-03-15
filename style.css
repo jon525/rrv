@@ -375,6 +375,34 @@ button {
   font-weight: 700;
 }
 
+.section-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.mode-toggle {
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-card);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.mode-toggle:hover,
+.mode-toggle:focus-visible {
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
 .calculator-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
@@ -593,6 +621,10 @@ input[type="number"] {
     margin-left: 0;
     width: 100%;
     padding: 0.75rem 1rem 6rem;
+  }
+
+  .section-toolbar {
+    margin-bottom: 0.85rem;
   }
 
   .section-header {

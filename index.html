@@ -95,8 +95,14 @@
         <header class="section-header">
           <p class="eyebrow">Brake test</p>
           <h1 id="decel-title">Average Deceleration</h1>
-          <p>Enter the starting speed and stopping time to estimate deceleration and g-force.</p>
+          <p id="decel-description">Enter the starting speed and stopping time to estimate deceleration and g-force.</p>
         </header>
+
+        <div class="section-toolbar">
+          <button id="decel-mode-toggle" class="mode-toggle" type="button" aria-label="Switch brake calculation mode">
+            Mode: Time
+          </button>
+        </div>
 
         <div class="calculator-layout">
           <section class="card glass input-panel" aria-label="Brake test inputs">
@@ -106,8 +112,8 @@
             </div>
 
             <div class="input-field">
-              <label for="decel-t">Stopping Time (s)</label>
-              <input id="decel-t" class="premium-input" type="text" inputmode="decimal" autocomplete="off" spellcheck="false">
+              <label id="decel-secondary-label" for="decel-secondary">Stopping Time (s)</label>
+              <input id="decel-secondary" class="premium-input" type="text" inputmode="decimal" autocomplete="off" spellcheck="false">
             </div>
           </section>
 
@@ -128,7 +134,7 @@
               </div>
             </div>
 
-            <p class="formula-info">Formula: 0 = u + at, so deceleration magnitude = u / t.</p>
+            <p id="decel-formula" class="formula-info">Formula: 0 = u + at, so deceleration magnitude = u / t.</p>
           </section>
         </div>
 
