@@ -109,6 +109,9 @@ const DecelUI = {
 
   toggleMode() {
     this.mode = this.mode === "time" ? "distance" : "time";
+    if (this.secondaryInput) {
+      this.secondaryInput.value = "";
+    }
     this.updateModeUI();
     this.clearResults();
   },
