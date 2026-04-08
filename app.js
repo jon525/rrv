@@ -181,19 +181,18 @@ const app = {
       return;
     }
 
-    const today = new Date();
-    const nextServiceDate = new Date(today);
-    nextServiceDate.setMonth(nextServiceDate.getMonth() + 3);
-    nextServiceDate.setDate(nextServiceDate.getDate() - 14);
+    try {
+      const today = new Date();
+      const nextServiceDate = new Date(today);
+      nextServiceDate.setMonth(nextServiceDate.getMonth() + 3);
+      nextServiceDate.setDate(nextServiceDate.getDate() - 14);
 
-    const formattedDate = new Intl.DateTimeFormat("en-AU", {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    }).format(nextServiceDate);
-
-    this.serviceDate.textContent = formattedDate;
-    this.serviceNote.textContent = "Calculated as today + 3 months - 2 weeks";
+      this.serviceDate.textContent = this.formatServiceDate(nextServiceDate);
+      this.serviceNote.textContent = "Calculated as today + 3 months - 2 weeks";
+    } catch (error) {
+      this.serviceDate.textContent = this.formatServiceDateFallback(new Date());
+      this.serviceNote.textContent = "Unable to calculate automatically on this browser";
+    }
   },
 
   getWeatherDescription(weatherCode) {
@@ -246,6 +245,37 @@ const app = {
       hour: "numeric",
       minute: "2-digit"
     }).format(date);
+  },
+
+  formatServiceDate(date) {
+    try {
+      return new Intl.DateTimeFormat("en-AU", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }).format(date);
+    } catch (error) {
+      return this.formatServiceDateFallback(date);
+    }
+  },
+
+  formatServiceDateFallback(date) {
+    const monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ];
+
+    return `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
   },
 
   parseDecimal(value) {
