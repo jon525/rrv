@@ -13,10 +13,13 @@ const app = {
     this.weatherCondition = document.getElementById("weather-condition");
     this.weatherDetails = document.getElementById("weather-details");
     this.weatherUpdated = document.getElementById("weather-updated");
+    this.serviceDate = document.getElementById("service-date");
+    this.serviceNote = document.getElementById("service-note");
 
     this.attachNavigation();
     this.attachTwistInputs();
     this.loadWeather();
+    this.loadNextService();
 
     if (typeof DecelUI !== "undefined") {
       DecelUI.init();
@@ -171,6 +174,26 @@ const app = {
     this.weatherCondition.textContent = condition;
     this.weatherDetails.textContent = details;
     this.weatherUpdated.textContent = updated;
+  },
+
+  loadNextService() {
+    if (!this.serviceDate || !this.serviceNote) {
+      return;
+    }
+
+    const today = new Date();
+    const nextServiceDate = new Date(today);
+    nextServiceDate.setMonth(nextServiceDate.getMonth() + 3);
+    nextServiceDate.setDate(nextServiceDate.getDate() - 14);
+
+    const formattedDate = new Intl.DateTimeFormat("en-AU", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }).format(nextServiceDate);
+
+    this.serviceDate.textContent = formattedDate;
+    this.serviceNote.textContent = "Calculated as today + 3 months - 2 weeks";
   },
 
   getWeatherDescription(weatherCode) {

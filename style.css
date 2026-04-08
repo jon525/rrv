@@ -364,6 +364,38 @@ button {
   font-size: 0.9rem;
 }
 
+.service-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.service-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3vw, 1.8rem);
+  letter-spacing: -0.02em;
+}
+
+.service-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.service-date {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1.05;
+  font-weight: 800;
+  color: var(--accent-blue);
+}
+
+.service-note {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
 .breadcrumb {
   margin-bottom: 0.35rem;
 }
