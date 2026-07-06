@@ -1,6 +1,23 @@
 const Physics = {
+  G_ACCELERATION: 9.80665,
+  KMH_TO_MS: 3.6,
+
+  parseDecimal(value) {
+    if (typeof value !== "string") {
+      return Number.NaN;
+    }
+
+    const normalized = value.trim().replace(",", ".");
+
+    if (normalized === "") {
+      return Number.NaN;
+    }
+
+    return Number(normalized);
+  },
+
   kmhToMs(kmh) {
-    return kmh / 3.6;
+    return kmh / this.KMH_TO_MS;
   },
 
   calculateDecelFromTime(speedKmh, timeSeconds) {
@@ -10,7 +27,7 @@ const Physics = {
 
     const speedMs = this.kmhToMs(speedKmh);
     const deceleration = speedMs / timeSeconds;
-    const gForce = deceleration / 9.80665;
+    const gForce = deceleration / this.G_ACCELERATION;
 
     return {
       deceleration,
@@ -25,11 +42,19 @@ const Physics = {
 
     const speedMs = this.kmhToMs(speedKmh);
     const deceleration = (speedMs * speedMs) / (2 * distanceMeters);
-    const gForce = deceleration / 9.80665;
+    const gForce = deceleration / this.G_ACCELERATION;
 
     return {
       deceleration,
       gForce
     };
+  },
+
+  calculateTwist(shortestWheelbase, longestWheelbase) {
+    if (shortestWheelbase <= 0 || longestWheelbase <= 0) {
+      return null;
+    }
+
+    return Math.abs(((shortestWheelbase - longestWheelbase) / shortestWheelbase) * 100);
   }
 };

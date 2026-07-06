@@ -1,7 +1,11 @@
 const app = {
   currentView: "home",
+  weatherCacheKey: "rrv-weather-v1",
+  weatherCacheTtlMs: 10 * 60 * 1000,
+  weatherFetchTimeoutMs: 6000,
 
   init() {
+    this.appShell = document.querySelector(".app-shell");
     this.views = Array.from(document.querySelectorAll(".view"));
     this.navButtons = Array.from(document.querySelectorAll("[data-view-target]"));
     this.twistWs = document.getElementById("twist-ws");
@@ -15,6 +19,8 @@ const app = {
     this.weatherUpdated = document.getElementById("weather-updated");
     this.serviceDate = document.getElementById("service-date");
     this.serviceNote = document.getElementById("service-note");
+    this.pendingTwistFrame = 0;
+    this.lastTwistKey = "";
 
     this.attachNavigation();
     this.attachTwistInputs();
@@ -29,17 +35,26 @@ const app = {
   },
 
   attachNavigation() {
-    this.navButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        const target = button.dataset.viewTarget;
-        if (target) {
-          this.showView(target);
-        }
-      });
+    if (!this.appShell) {
+      return;
+    }
+
+    this.appShell.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-view-target]");
+
+      if (!button || !this.appShell.contains(button)) {
+        return;
+      }
+
+      this.showView(button.dataset.viewTarget);
     });
   },
 
   showView(viewId) {
+    if (!viewId || viewId === this.currentView) {
+      return;
+    }
+
     this.views.forEach((view) => {
       view.classList.toggle("hidden", view.id !== viewId);
     });
@@ -57,23 +72,44 @@ const app = {
       return;
     }
 
+    const queueTwistCalculation = () => this.scheduleTwistCalculation();
+
     [this.twistWs, this.twistWl].forEach((element) => {
-      element.addEventListener("input", () => this.calculateTwist());
-      element.addEventListener("change", () => this.calculateTwist());
+      element.addEventListener("input", queueTwistCalculation);
+      element.addEventListener("change", queueTwistCalculation);
+    });
+  },
+
+  scheduleTwistCalculation() {
+    if (this.pendingTwistFrame) {
+      return;
+    }
+
+    this.pendingTwistFrame = window.requestAnimationFrame(() => {
+      this.pendingTwistFrame = 0;
+      this.calculateTwist();
     });
   },
 
   calculateTwist() {
-    const ws = this.parseDecimal(this.twistWs.value);
-    const wl = this.parseDecimal(this.twistWl.value);
+    const twistKey = `${this.twistWs.value}|${this.twistWl.value}`;
 
-    if (!Number.isFinite(ws) || !Number.isFinite(wl) || ws <= 0 || wl <= 0) {
+    if (twistKey === this.lastTwistKey) {
+      return;
+    }
+
+    this.lastTwistKey = twistKey;
+
+    const ws = Physics.parseDecimal(this.twistWs.value);
+    const wl = Physics.parseDecimal(this.twistWl.value);
+    const deviation = Physics.calculateTwist(ws, wl);
+
+    if (!Number.isFinite(deviation)) {
       this.setTwistState(0, "var(--accent-success)");
       this.resetTwistCalculation();
       return;
     }
 
-    const deviation = Math.abs(((ws - wl) / ws) * 100);
     this.updateTwistCalculation(ws, wl, deviation);
 
     if (deviation > 60) {
@@ -99,7 +135,7 @@ const app = {
       return;
     }
 
-    this.twistCalc.innerHTML = "<div>Enter WS and WL to show the working.</div>";
+    this.setTwistCalculationLines(["Enter WS and WL to show the working."]);
   },
 
   updateTwistCalculation(ws, wl, deviation) {
@@ -107,15 +143,32 @@ const app = {
       return;
     }
 
-    this.twistCalc.innerHTML = `
-      <div>Difference: WS - WL = ${ws.toFixed(2)} - ${wl.toFixed(2)} = ${(ws - wl).toFixed(2)}</div>
-      <div>Deviation: ((WS - WL) / WS) × 100 = ((${ws.toFixed(2)} - ${wl.toFixed(2)}) / ${ws.toFixed(2)}) × 100</div>
-      <div>Result: ${deviation.toFixed(2)}%</div>
-    `;
+    this.setTwistCalculationLines([
+      `Difference: WS - WL = ${ws.toFixed(2)} - ${wl.toFixed(2)} = ${(ws - wl).toFixed(2)}`,
+      `Deviation: ((WS - WL) / WS) \u00d7 100 = ((${ws.toFixed(2)} - ${wl.toFixed(2)}) / ${ws.toFixed(2)}) \u00d7 100`,
+      `Result: ${deviation.toFixed(2)}%`
+    ]);
+  },
+
+  setTwistCalculationLines(lines) {
+    this.twistCalc.replaceChildren(
+      ...lines.map((line) => {
+        const element = document.createElement("div");
+        element.textContent = line;
+        return element;
+      })
+    );
   },
 
   async loadWeather() {
     if (!this.weatherStatus || !this.weatherTemp || !this.weatherCondition || !this.weatherDetails || !this.weatherUpdated) {
+      return;
+    }
+
+    const cachedWeather = this.readWeatherCache();
+
+    if (cachedWeather) {
+      this.setWeatherState(cachedWeather);
       return;
     }
 
@@ -125,14 +178,17 @@ const app = {
 
     this.setWeatherState({
       status: "Loading",
-      temp: "--°C",
+      temp: "--\u00b0C",
       condition: "Loading current conditions...",
       details: "Wind -- km/h",
       updated: "Updating weather..."
     });
 
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), this.weatherFetchTimeoutMs);
+
     try {
-      const response = await fetch(endpoint);
+      const response = await fetch(endpoint, { signal: controller.signal });
 
       if (!response.ok) {
         throw new Error(`Weather request failed with status ${response.status}`);
@@ -149,22 +205,57 @@ const app = {
       const windSpeed = Math.round(current.wind_speed_10m);
       const condition = this.getWeatherDescription(current.weather_code);
       const updated = this.formatWeatherTime(current.time);
-
-      this.setWeatherState({
+      const weatherState = {
         status: condition,
-        temp: `${temperature}°C`,
+        temp: `${temperature}\u00b0C`,
         condition,
         details: `Wind ${windSpeed} km/h`,
         updated: `Updated ${updated}`
-      });
+      };
+
+      this.setWeatherState(weatherState);
+      this.writeWeatherCache(weatherState);
     } catch (error) {
       this.setWeatherState({
         status: "Offline",
-        temp: "--°C",
+        temp: "--\u00b0C",
         condition: "Current weather unavailable",
         details: "Check connection to refresh weather",
         updated: "Unable to load Dry Creek weather"
       });
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  },
+
+  readWeatherCache() {
+    try {
+      const rawCache = window.localStorage.getItem(this.weatherCacheKey);
+
+      if (!rawCache) {
+        return null;
+      }
+
+      const cache = JSON.parse(rawCache);
+
+      if (!cache.savedAt || !cache.state || Date.now() - cache.savedAt > this.weatherCacheTtlMs) {
+        return null;
+      }
+
+      return cache.state;
+    } catch (error) {
+      return null;
+    }
+  },
+
+  writeWeatherCache(state) {
+    try {
+      window.localStorage.setItem(this.weatherCacheKey, JSON.stringify({
+        savedAt: Date.now(),
+        state
+      }));
+    } catch (error) {
+      // Weather still renders normally when storage is unavailable.
     }
   },
 
@@ -276,15 +367,6 @@ const app = {
     ];
 
     return `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-  },
-
-  parseDecimal(value) {
-    if (typeof value !== "string") {
-      return Number.NaN;
-    }
-
-    const normalized = value.trim().replace(",", ".");
-    return Number.parseFloat(normalized);
   }
 };
 

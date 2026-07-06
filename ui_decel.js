@@ -1,6 +1,8 @@
 const DecelUI = {
   init() {
     this.mode = "time";
+    this.pendingFrame = 0;
+    this.lastCalculationKey = "";
     this.speedInput = document.getElementById("decel-v");
     this.secondaryInput = document.getElementById("decel-secondary");
     this.secondaryLabel = document.getElementById("decel-secondary-label");
@@ -15,9 +17,11 @@ const DecelUI = {
       return;
     }
 
+    const queueCalculation = () => this.scheduleCalculate();
+
     [this.speedInput, this.secondaryInput].forEach((element) => {
-      element.addEventListener("input", () => this.calculate());
-      element.addEventListener("change", () => this.calculate());
+      element.addEventListener("input", queueCalculation);
+      element.addEventListener("change", queueCalculation);
     });
 
     if (this.modeToggle) {
@@ -27,9 +31,28 @@ const DecelUI = {
     this.updateModeUI();
   },
 
+  scheduleCalculate() {
+    if (this.pendingFrame) {
+      return;
+    }
+
+    this.pendingFrame = window.requestAnimationFrame(() => {
+      this.pendingFrame = 0;
+      this.calculate();
+    });
+  },
+
   calculate() {
-    const speedKmh = this.parseDecimal(this.speedInput.value);
-    const secondaryValue = this.parseDecimal(this.secondaryInput.value);
+    const calculationKey = `${this.mode}|${this.speedInput.value}|${this.secondaryInput.value}`;
+
+    if (calculationKey === this.lastCalculationKey) {
+      return;
+    }
+
+    this.lastCalculationKey = calculationKey;
+
+    const speedKmh = Physics.parseDecimal(this.speedInput.value);
+    const secondaryValue = Physics.parseDecimal(this.secondaryInput.value);
 
     if (!Number.isFinite(speedKmh) || !Number.isFinite(secondaryValue)) {
       this.clearResults();
@@ -56,10 +79,13 @@ const DecelUI = {
     this.resultDecel.textContent = "0.00";
     this.resultGForce.textContent = "0.000 G";
     this.resultDecel.style.color = "var(--text-primary)";
+
     if (this.calcBox) {
-      this.calcBox.innerHTML = this.mode === "time"
-        ? "<div>Enter speed and time to show the working.</div>"
-        : "<div>Enter speed and distance to show the working.</div>";
+      this.setCalculationLines([
+        this.mode === "time"
+          ? "Enter speed and time to show the working."
+          : "Enter speed and distance to show the working."
+      ]);
     }
   },
 
@@ -77,41 +103,45 @@ const DecelUI = {
     this.resultDecel.style.color = "var(--accent-success)";
   },
 
-  parseDecimal(value) {
-    if (typeof value !== "string") {
-      return Number.NaN;
-    }
-
-    const normalized = value.trim().replace(",", ".");
-    return Number.parseFloat(normalized);
-  },
-
   updateCalculation(speedKmh, speedMs, secondaryValue, deceleration, gForce) {
     if (!this.calcBox) {
       return;
     }
 
     if (this.mode === "time") {
-      this.calcBox.innerHTML = `
-        <div>Speed conversion: ${speedKmh.toFixed(2)} km/h ÷ 3.6 = ${speedMs.toFixed(2)} m/s</div>
-        <div>Deceleration: a = u / t = ${speedMs.toFixed(2)} / ${secondaryValue.toFixed(2)} = ${deceleration.toFixed(2)} m/s²</div>
-        <div>G-force: ${deceleration.toFixed(2)} ÷ 9.80665 = ${gForce.toFixed(3)} G</div>
-      `;
+      this.setCalculationLines([
+        `Speed conversion: ${speedKmh.toFixed(2)} km/h \u00f7 3.6 = ${speedMs.toFixed(2)} m/s`,
+        `Deceleration: a = u / t = ${speedMs.toFixed(2)} / ${secondaryValue.toFixed(2)} = ${deceleration.toFixed(2)} m/s\u00b2`,
+        `G-force: ${deceleration.toFixed(2)} \u00f7 ${Physics.G_ACCELERATION} = ${gForce.toFixed(3)} G`
+      ]);
       return;
     }
 
-    this.calcBox.innerHTML = `
-      <div>Speed conversion: ${speedKmh.toFixed(2)} km/h ÷ 3.6 = ${speedMs.toFixed(2)} m/s</div>
-      <div>Deceleration: a = u² / (2s) = (${speedMs.toFixed(2)}²) / (2 × ${secondaryValue.toFixed(2)}) = ${deceleration.toFixed(2)} m/s²</div>
-      <div>G-force: ${deceleration.toFixed(2)} ÷ 9.80665 = ${gForce.toFixed(3)} G</div>
-    `;
+    this.setCalculationLines([
+      `Speed conversion: ${speedKmh.toFixed(2)} km/h \u00f7 3.6 = ${speedMs.toFixed(2)} m/s`,
+      `Deceleration: a = u\u00b2 / (2s) = (${speedMs.toFixed(2)}\u00b2) / (2 \u00d7 ${secondaryValue.toFixed(2)}) = ${deceleration.toFixed(2)} m/s\u00b2`,
+      `G-force: ${deceleration.toFixed(2)} \u00f7 ${Physics.G_ACCELERATION} = ${gForce.toFixed(3)} G`
+    ]);
+  },
+
+  setCalculationLines(lines) {
+    this.calcBox.replaceChildren(
+      ...lines.map((line) => {
+        const element = document.createElement("div");
+        element.textContent = line;
+        return element;
+      })
+    );
   },
 
   toggleMode() {
     this.mode = this.mode === "time" ? "distance" : "time";
+
     if (this.secondaryInput) {
       this.secondaryInput.value = "";
     }
+
+    this.lastCalculationKey = "";
     this.updateModeUI();
     this.clearResults();
   },
@@ -126,7 +156,7 @@ const DecelUI = {
     if (this.formulaInfo) {
       this.formulaInfo.textContent = this.mode === "time"
         ? "Formula: 0 = u + at, so deceleration magnitude = u / t."
-        : "Formula: 0 = u² + 2as, so deceleration magnitude = u² / (2s).";
+        : "Formula: 0 = u\u00b2 + 2as, so deceleration magnitude = u\u00b2 / (2s).";
     }
 
     if (this.description) {
